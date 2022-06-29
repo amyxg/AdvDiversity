@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
+import PropTypes from "prop-types";
 import { Card } from "react-bootstrap";
-import mentorProfile from "../../services/mentorProfileService";
-import * as toastr from "toastr";
-import "toastr/build/toastr.css";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -11,49 +9,50 @@ import {
   faTwitter,
   faGithub,
 } from "@fortawesome/free-brands-svg-icons";
-
+import "./mentorprofile.css";
 import debug from "sabio-debug";
-const _loggerPage = debug.extend("MentorProfile");
 
-const MentorProfile = () => {
-  const [profile, setMentor] = useState({});
+const _logger = debug.extend("mentorProfile");
+const MentorProfile = (props) => {
+  const aMentor = props.mentorInfo;
+  _logger(aMentor);
 
-  useEffect(() => {
-    mentorProfile
-      .getMentorProfile()
-      .then(onGetMentorSuccess)
-      .catch(onGetMentorError);
-  }, []);
-
-  const onGetMentorSuccess = (response) => {
-    _loggerPage("onGetMentorSuccess -->", response);
-    let profile = { ...response.item };
-    setMentor(profile);
-  };
-
-  const onGetMentorError = (err) => {
-    _loggerPage("onGetAllProfilesError -->", err);
-    toastr.error("Could not retrieve Mentor");
+  const mapFunc = (item) => {
+    return (
+      <span
+        className={`font-13 pill-${Math.floor(item.id % 10)}`}
+        key={item.id}
+      >
+        {item.name}
+      </span>
+    );
   };
   return (
     <React.Fragment>
-      {profile && (
+      {aMentor && (
         <div className="row">
           <div className="card">
             <Card className="text-center">
               <Card.Body>
                 <img
-                  src={profile.imageUrl}
+                  src={aMentor.imageUrl}
                   className="rounded-circle avatar-lg img-thumbnail"
                   alt="https://styleoflady.com/wp-content/uploads/2018/04/40371225585_e0ef7fa08e_b.jpg"
                 />
                 <h4 className="mb-0 mt-2">
-                  {profile.firstName} {profile.lastName}
+                  {aMentor.firstName} {aMentor.lastName}
                 </h4>
-                <p className="text-muted font-13">Web Developer</p>
-                <p className="text-muted mb-2 font-13">
-                  <span className="ms-2">{profile.phoneNumber}</span>
-                </p>
+                <div className="mt-1 mb-1">
+                  {" "}
+                  <div className=" font-13">
+                    <strong>Web Developer</strong>
+                  </div>
+                  <div className=" font-13">
+                    <span className="ms-2">
+                      Cell Phone : {aMentor.phoneNumber}
+                    </span>
+                  </div>
+                </div>
                 <button type="button" className="btn btn-success btn-sm mb-2">
                   Zoom
                 </button>{" "}
@@ -61,29 +60,34 @@ const MentorProfile = () => {
                   Message
                 </button>
                 <div className="text-start mt-3">
-                  <h4 className="font-13 text-uppercase">About Me :</h4>
-                  <p className="text-muted font-13 mb-3">
-                    {profile.description}
-                  </p>
-                  <p className="text-muted mb-1 font-13">
-                    <strong>Specialty :</strong>
-                    {profile.specialty?.map((items) => (
-                      <p className="text-muted font-13 mb-3" key={items.id}>
-                        {items.name}
-                      </p>
-                    ))}
-                  </p>
-                  <p className="text-muted mb-2 font-13">
-                    <strong>Email :</strong>
-                    <span className="ms-2 ">mentor295@email.domain</span>
-                  </p>
-                  <p className="text-muted mb-1 font-13">
-                    <strong>Location :</strong>
-                    <span className="ms-2">Los Angeles, USA</span>
-                  </p>
-                  <p className="text-muted mb-1 font-13">
-                    <strong>Focus Areas :</strong>
-                  </p>
+                  <h4 className="font-13 text-uppercase">About Me</h4>
+                  <div className=" font-13 mb-3">{aMentor.description}</div>
+                  <div className=" font-13">
+                    Email:<span className="ms-2 ">mentor295@email.domain</span>
+                  </div>
+                  <div className=" font-13">
+                    Location:<span className="ms-2">Los Angeles, USA</span>
+                  </div>
+                  <div className="font-13 mb-1">
+                    Focus Areas:
+                    {aMentor.focusAreas?.map(mapFunc)}
+                  </div>
+                  <div className=" font-13 mb-1">
+                    Gender:
+                    {aMentor.genderTypes?.map(mapFunc)}
+                  </div>
+                  <div className="font-13 mb-1">
+                    Grades:
+                    {aMentor.grades?.map(mapFunc)}
+                  </div>
+                  <div className=" font-13 mb-1">
+                    Mentoring Types:
+                    {aMentor.mentoringTypes?.map(mapFunc)}
+                  </div>
+                  <div className=" font-13 mb-1">
+                    Specialties:
+                    {aMentor.specialties?.map(mapFunc)}
+                  </div>
                 </div>
                 <ul className="social-list list-inline mt-3 mb-0">
                   <li className="list-inline-item">
@@ -128,4 +132,51 @@ const MentorProfile = () => {
   );
 };
 
-export default MentorProfile;
+MentorProfile.propTypes = {
+  mentorInfo: PropTypes.shape({
+    firstName: PropTypes.string.isRequired,
+    lastName: PropTypes.string.isRequired,
+    imageUrl: PropTypes.string.isRequired,
+    description: PropTypes.string.isRequired,
+    phoneNumber: PropTypes.string.isRequired,
+    focusAreas: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        name: PropTypes.string.isRequired,
+      })
+    ),
+
+    ages: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        name: PropTypes.string.isRequired,
+      })
+    ),
+    grades: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        name: PropTypes.string.isRequired,
+      })
+    ),
+    mentoringTypes: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        name: PropTypes.string.isRequired,
+      })
+    ),
+    genderTypes: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        name: PropTypes.string.isRequired,
+      })
+    ),
+    specialties: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        name: PropTypes.string.isRequired,
+      })
+    ),
+  }),
+};
+
+export default React.memo(MentorProfile);

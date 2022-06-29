@@ -1,11 +1,35 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Row, Col, Tab, Card, Nav } from "react-bootstrap";
 import PropTypes from "prop-types";
-import MentorProfile from "../../../components/mentorDashboard/MentorProfile";
-import AppointmentsCard from "../../../components/appointments/AppointmentsCard";
-import MentorMatches from "../../../components/mentorDashboard/MentorMatches";
+import MentorProfile from "../../../components/mentordashboard/MentorProfile";
+import MentorAppointment from "../../../components/mentordashboard/MentorAppointment";
+import MentorMatches from "../../../components/mentordashboard/MentorMatches";
+import mentorProfile from "../../../services/mentorProfileService";
+import * as toastr from "toastr";
+import "toastr/build/toastr.css";
+import debug from "sabio-debug";
+const _loggerPage = debug.extend("MentorProfileProps");
 
 const MentorDashboard = (props) => {
+  const [profile, setMentor] = useState({});
+
+  useEffect(() => {
+    mentorProfile
+      .getMentorProfile()
+      .then(onGetMentorSuccess)
+      .catch(onGetMentorError);
+  }, []);
+
+  const onGetMentorSuccess = (response) => {
+    _loggerPage("onGetMentorSuccess -->", response);
+    let profile = { ...response.item };
+    setMentor(profile);
+  };
+
+  const onGetMentorError = (err) => {
+    _loggerPage("onGetAllProfilesError -->", err);
+    toastr.error("Could not retrieve Mentor");
+  };
   return (
     <>
       <Row>
@@ -18,11 +42,11 @@ const MentorDashboard = (props) => {
       </Row>
 
       <Row>
-        <Col xl={4} lg={5}>
-          <MentorProfile />
+        <Col sm={3}>
+          <MentorProfile mentorInfo={profile} />
         </Col>
 
-        <Col xl={8} lg={7}>
+        <Col>
           <Tab.Container>
             <Card>
               <Card.Body>
@@ -61,7 +85,7 @@ const MentorDashboard = (props) => {
 
                 <Tab.Content>
                   <Tab.Pane eventKey="calendar">
-                    <AppointmentsCard />
+                    <MentorAppointment />
                   </Tab.Pane>
                 </Tab.Content>
 
